@@ -5,6 +5,7 @@ const { initGame } = require("./game");
 const cors = require("cors");
 
 const app = express();
+app.use(cors());
 const server = http.createServer(app);
 const io = socketio(server, {
   cors: {
