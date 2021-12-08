@@ -17,7 +17,7 @@ const announcement = document.getElementById("announcement-text");
 
 const btnRest = document.querySelector(".btn-reset");
 
-const socket = io("http://localhost:3000/");
+const socket = io("https://thawing-forest-35529.herokuapp.com/");
 
 socket.on("init", handleInit);
 socket.on("render", handleRender);
