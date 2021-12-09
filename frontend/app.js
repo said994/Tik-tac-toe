@@ -48,7 +48,7 @@ function joinGame() {
   handelEmptyInput();
 
   if (roomHeck) {
-    socket.emit("joinGame", roomHeck);
+    socket.emit("joinGame", roomHeck, true);
     return;
   }
   roomHeck = gameCodeInput.value;

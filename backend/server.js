@@ -31,24 +31,21 @@ io.on("connection", (socket) => {
   socket.on("newGame", handleNewGame);
   socket.on("joinGame", handleJoinGame);
 
-  function handleJoinGame(roomName) {
-    const room = io.sockets.adapter.rooms.get(roomName);
-    console.log(room);
-
-    let roomSize = 0;
-
-    if (room) roomSize = room.size;
-
-    if (roomSize === 0) {
-      socket.emit("unknownRoom");
-      return;
-    } else if (roomSize > 1) {
-      socket.emit("fullRoom");
-      return;
+  function handleJoinGame(roomName, restart) {
+    if (!restart) {
+      const room = io.sockets.adapter.rooms.get(roomName);
+      let roomSize = 0;
+      if (room) roomSize = room.size;
+      if (roomSize === 0) {
+        socket.emit("unknownRoom");
+        return;
+      } else if (roomSize > 1) {
+        socket.emit("fullRoom");
+        return;
+      }
+      playerRooms[socket.id] = roomName;
+      state[roomName].players[1].id = socket.id;
     }
-
-    playerRooms[socket.id] = roomName;
-    state[roomName].players[1].id = socket.id;
 
     socket.join(roomName);
     socket.emit("init", 2);
@@ -114,10 +111,6 @@ io.on("connection", (socket) => {
     }
   }
 
-  function restGame(roomName) {
-    state[roomName] = null;
-  }
-
   socket.on("disconnect", () => {
     const roomName = playerRooms[socket.id];
     if (!state[roomName]) {
@@ -129,9 +122,13 @@ io.on("connection", (socket) => {
       const leftPlayerIndex = state[roomName].players.findIndex((player) => {
         return player.id === socket.id;
       });
-
       const winnerNumber = leftPlayerIndex === 0 ? 2 : 1;
       emitGameWinner(roomName, winnerNumber);
+
+      if (leftPlayerIndex < 0) {
+        restGame(roomName);
+        return;
+      }
       state[roomName].players[leftPlayerIndex].positions = [];
       restGame(roomName);
     }
@@ -156,6 +153,10 @@ function emitGameWinner(room, winner) {
 
 function emitGameDraw(room, draw) {
   io.sockets.in(room).emit("gameDraw", draw);
+}
+
+function restGame(roomName) {
+  state[roomName] = null;
 }
 
 const PORT = process.env.PORT || 3000;
