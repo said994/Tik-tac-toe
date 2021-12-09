@@ -17,9 +17,10 @@ const announcement = document.getElementById("announcement-text");
 
 const btnRest = document.querySelector(".btn-reset");
 
-const socket = io("https://pure-citadel-48014.herokuapp.com/");
+const socket = io("http://localhost:3000/");
 
 socket.on("init", handleInit);
+socket.on("gameStart", handleGameStart);
 socket.on("render", handleRender);
 socket.on("gameState", handleGameState);
 socket.on("gameDraw", handleGameDraw);
@@ -34,6 +35,27 @@ joinGameBtn.addEventListener("click", joinGame);
 let roomHeck;
 
 function newGame() {
+  handelEmptyInput();
+  if (roomHeck) {
+    socket.emit("newGame", roomHeck);
+    return;
+  }
+  roomHeck = gameCodeInput.value;
+  socket.emit("newGame", gameCodeInput.value);
+}
+
+function joinGame() {
+  handelEmptyInput();
+
+  if (roomHeck) {
+    socket.emit("joinGame", roomHeck);
+    return;
+  }
+  roomHeck = gameCodeInput.value;
+  socket.emit("joinGame", gameCodeInput.value);
+}
+
+function handelEmptyInput() {
   if (!gameCodeInput.value) {
     createRoomScreen.classList.add("hide");
     stateAnnouncement.classList.remove("hide");
@@ -44,36 +66,38 @@ function newGame() {
     }, MESSAGE_TIME);
     return;
   }
-  createRoomScreen.classList.add("hide");
-  gameScreen.classList.remove("hide");
-  sectionAnnouncement.classList.remove("hide");
-
-  if (roomHeck) {
-    socket.emit("newGame", roomHeck);
-    init();
-    return;
-  }
-  roomHeck = gameCodeInput.value;
-  socket.emit("newGame", gameCodeInput.value);
-  init();
-}
-
-function joinGame() {
-  createRoomScreen.classList.add("hide");
-  gameScreen.classList.remove("hide");
-  sectionAnnouncement.classList.remove("hide");
-  if (roomHeck) {
-    socket.emit("joinGame", roomHeck);
-    init();
-    return;
-  }
-  roomHeck = gameCodeInput.value;
-  socket.emit("joinGame", gameCodeInput.value);
-  init();
 }
 
 let playerNumber;
 let gameActive = false;
+
+function handleInit(number) {
+  playerNumber = number;
+}
+
+function handleGameStart() {
+  createRoomScreen.classList.add("hide");
+  gameScreen.classList.remove("hide");
+
+  cells.forEach((cell) => {
+    cell.addEventListener("click", clickOnGrid);
+  });
+
+  gameActive = true;
+}
+
+function handleRender(playerOne, playerTwo) {
+  playerTwo.forEach((index) => {
+    cells[index].classList.add("circle");
+  });
+  playerOne.forEach((index) => {
+    cells[index].classList.add("x");
+  });
+}
+
+function clickOnGrid(e) {
+  socket.emit("clickGrid", cells.indexOf(e.target), playerNumber);
+}
 
 function handleWaitForPlayer() {
   stateAnnouncement.classList.remove("hide");
@@ -114,34 +138,6 @@ function handleUnkownRoom() {
   }, MESSAGE_TIME);
 }
 
-function init() {
-  createRoomScreen.classList.add("hide");
-  gameScreen.classList.remove("hide");
-
-  cells.forEach((cell) => {
-    cell.addEventListener("click", clickOnGrid);
-  });
-
-  gameActive = true;
-}
-
-function handleRender(playerOne, playerTwo) {
-  playerTwo.forEach((index) => {
-    cells[index].classList.add("circle");
-  });
-  playerOne.forEach((index) => {
-    cells[index].classList.add("x");
-  });
-}
-
-function clickOnGrid(e) {
-  socket.emit("clickGrid", cells.indexOf(e.target), playerNumber);
-}
-
-function handleInit(number) {
-  playerNumber = number;
-}
-
 function handleGameState(winner) {
   if (!winner) {
     return;
@@ -174,7 +170,6 @@ function handleTurnMessage(number) {
   }
 }
 
-function reset() {}
 btnRest.addEventListener("click", restGame);
 
 function restGame(e) {

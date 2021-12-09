@@ -33,11 +33,11 @@ io.on("connection", (socket) => {
 
   function handleJoinGame(roomName) {
     const room = io.sockets.adapter.rooms.get(roomName);
+    console.log(room);
 
     let roomSize = 0;
 
     if (room) roomSize = room.size;
-    console.log(roomSize);
 
     if (roomSize === 0) {
       socket.emit("unknownRoom");
@@ -52,16 +52,16 @@ io.on("connection", (socket) => {
 
     socket.join(roomName);
     socket.emit("init", 2);
-    console.log(playerRooms);
+    socket.emit("gameStart");
   }
 
   function handleNewGame(roomName) {
     state[roomName] = initGame();
-
     playerRooms[socket.id] = roomName;
     state[roomName].players[0].id = socket.id;
     socket.join(roomName);
     socket.emit("init", 1);
+    socket.emit("gameStart");
   }
 
   function handleClick(index, playerNumber) {
@@ -120,6 +120,11 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     const roomName = playerRooms[socket.id];
+    if (!state[roomName]) {
+      playerRooms[socket.id] = null;
+      return;
+    }
+
     if (state[roomName]) {
       const leftPlayerIndex = state[roomName].players.findIndex((player) => {
         return player.id === socket.id;
@@ -127,10 +132,8 @@ io.on("connection", (socket) => {
 
       const winnerNumber = leftPlayerIndex === 0 ? 2 : 1;
       emitGameWinner(roomName, winnerNumber);
-      restGame(roomName);
       state[roomName].players[leftPlayerIndex].positions = [];
-
-      console.log("leftPlayer: ", leftPlayerIndex);
+      restGame(roomName);
     }
   });
 });
