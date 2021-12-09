@@ -48,7 +48,7 @@ body {
 }
 
 .cell {
-  border: 1px solid black;
+  border: 1px solid coral;
   width: var(--cell-size);
   height: var(--cell-size);
   display: flex;
@@ -115,7 +115,7 @@ body {
 .cell.circle::after {
   width: calc(var(--mark-size) * 0.7);
   height: calc(var(--mark-size) * 0.7);
-  background-color: rgba(0, 0, 0, 0.9);
+  background-color: rgba(0, 0, 0, 0.7);
 }
 
 .flex {

@@ -17,7 +17,7 @@ const announcement = document.getElementById("announcement-text");
 
 const btnRest = document.querySelector(".btn-reset");
 
-const socket = io("http://localhost:3000/");
+const socket = io("https://pure-citadel-48014.herokuapp.com/");
 
 socket.on("init", handleInit);
 socket.on("gameStart", handleGameStart);
@@ -35,7 +35,8 @@ joinGameBtn.addEventListener("click", joinGame);
 let roomHeck;
 
 function newGame() {
-  handelEmptyInput();
+  if (!handelEmptyInput()) return;
+
   if (roomHeck) {
     socket.emit("newGame", roomHeck);
     return;
@@ -45,7 +46,7 @@ function newGame() {
 }
 
 function joinGame() {
-  handelEmptyInput();
+  if (!handelEmptyInput()) return;
 
   if (roomHeck) {
     socket.emit("joinGame", roomHeck, true);
@@ -53,19 +54,6 @@ function joinGame() {
   }
   roomHeck = gameCodeInput.value;
   socket.emit("joinGame", gameCodeInput.value);
-}
-
-function handelEmptyInput() {
-  if (!gameCodeInput.value) {
-    createRoomScreen.classList.add("hide");
-    stateAnnouncement.classList.remove("hide");
-    stateText.innerHTML = "Create a Room or join one to play.";
-    setTimeout(() => {
-      stateAnnouncement.classList.add("hide");
-      createRoomScreen.classList.remove("hide");
-    }, MESSAGE_TIME);
-    return;
-  }
 }
 
 let playerNumber;
@@ -99,6 +87,30 @@ function clickOnGrid(e) {
   socket.emit("clickGrid", cells.indexOf(e.target), playerNumber);
 }
 
+function handelEmptyInput() {
+  if (!gameCodeInput.value) {
+    stateAnnouncement.classList.remove("hide");
+    createRoomScreen.classList.add("hide");
+    stateText.innerHTML = "Create a Room or join one to play.";
+    setTimeout(() => {
+      stateAnnouncement.classList.add("hide");
+      createRoomScreen.classList.remove("hide");
+    }, MESSAGE_TIME);
+    return false;
+  }
+  return true;
+}
+
+function handleUnkownRoom() {
+  stateAnnouncement.classList.remove("hide");
+  createRoomScreen.classList.add("hide");
+  stateText.innerHTML = "This room does not exist!";
+  setTimeout(() => {
+    stateAnnouncement.classList.add("hide");
+    createRoomScreen.classList.remove("hide");
+  }, MESSAGE_TIME);
+}
+
 function handleWaitForPlayer() {
   stateAnnouncement.classList.remove("hide");
   gameScreen.classList.add("hide");
@@ -121,19 +133,6 @@ function handleFullRoom() {
     stateAnnouncement.classList.add("hide");
     createRoomScreen.classList.remove("hide");
     gameScreen.classList.remove("hide");
-    sectionAnnouncement.classList.remove("hide");
-  }, MESSAGE_TIME);
-}
-
-function handleUnkownRoom() {
-  stateAnnouncement.classList.remove("hide");
-  createRoomScreen.classList.add("hide");
-  gameScreen.classList.add("hide");
-  sectionAnnouncement.classList.add("hide");
-  stateText.innerHTML = "This room does not exist!";
-  setTimeout(() => {
-    stateAnnouncement.classList.add("hide");
-    createRoomScreen.classList.remove("hide");
     sectionAnnouncement.classList.remove("hide");
   }, MESSAGE_TIME);
 }
