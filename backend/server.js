@@ -1,7 +1,7 @@
 const http = require("http");
 const express = require("express");
 const socketio = require("socket.io");
-const { initGame } = require("./game");
+const { initGame, checkWinner } = require("./game");
 const cors = require("cors");
 
 const app = express();
@@ -14,17 +14,7 @@ const io = socketio(server, {
 });
 
 let state = {};
-const playerRooms = {};
-const WINNING_POSIBILITY = [
-  [0, 1, 2],
-  [3, 4, 5],
-  [6, 7, 8],
-  [0, 3, 6],
-  [1, 4, 7],
-  [2, 5, 8],
-  [0, 4, 8],
-  [2, 4, 6],
-];
+const playerRooms = {}; //this to map the socket id of player theroom
 
 io.on("connection", (socket) => {
   socket.on("clickGrid", handleClick);
@@ -33,6 +23,7 @@ io.on("connection", (socket) => {
 
   function handleJoinGame(roomName, restart) {
     if (!restart) {
+      //this for escaping roomSize checking for the restart game
       const room = io.sockets.adapter.rooms.get(roomName);
       let roomSize = 0;
       if (room) roomSize = room.size;
@@ -63,8 +54,10 @@ io.on("connection", (socket) => {
 
   function handleClick(index, playerNumber) {
     const roomName = playerRooms[socket.id];
-    const roomSize = io.sockets.adapter.rooms.get(roomName).size;
+    const room = io.sockets.adapter.rooms.get(roomName);
+    let roomSize;
 
+    if (room) roomSize = room.size;
     if (!roomName) return;
 
     if (!state[roomName]) return;
@@ -136,30 +129,15 @@ io.on("connection", (socket) => {
   });
 });
 
-function checkWinner(player) {
-  let winner = false;
-  WINNING_POSIBILITY.forEach((pos) => {
-    let count = 0;
-    for (let i = 0; i < player.length; i++) {
-      if (pos.includes(player[i])) count++;
-    }
-    if (count === 3) winner = true;
-  });
-  return winner;
-}
-
 function emitGameWinner(room, winner) {
   io.sockets.in(room).emit("gameState", winner);
 }
-
 function emitGameDraw(room, draw) {
   io.sockets.in(room).emit("gameDraw", draw);
 }
-
 function restGame(roomName) {
   state[roomName] = null;
 }
 
 const PORT = process.env.PORT || 3000;
-
 server.listen(PORT, () => console.log(`Server is running on port ${PORT}`));

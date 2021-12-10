@@ -1,8 +1,18 @@
 module.exports = {
   initGame,
-  gameLoop,
-  getUpdatePositions,
+  checkWinner,
 };
+
+const WINNING_POSIBILITY = [
+  [0, 1, 2],
+  [3, 4, 5],
+  [6, 7, 8],
+  [0, 3, 6],
+  [1, 4, 7],
+  [2, 5, 8],
+  [0, 4, 8],
+  [2, 4, 6],
+];
 
 function initGame() {
   const state = createGameState();
@@ -14,7 +24,7 @@ function createGameState() {
     players: [
       {
         id: "1",
-        class: "X",
+        class: "X", // this is for demonstration only
         turn: true,
         positions: [],
       },
@@ -28,21 +38,14 @@ function createGameState() {
   };
 }
 
-function gameLoop(state) {
-  if (!state) {
-    return;
-  }
-
-  const playerOne = state.players[0];
-  const playerTwo = state.players[1];
-
-  //add winner and retrun the number of the winner
-  return 1;
-}
-
-const positionArray = [];
-
-function getUpdatePositions(position) {
-  positionArray.push(position);
-  return positionArray;
+function checkWinner(player) {
+  let winner = false;
+  WINNING_POSIBILITY.forEach((pos) => {
+    let count = 0;
+    for (let i = 0; i < player.length; i++) {
+      if (pos.includes(player[i])) count++;
+    }
+    if (count === 3) winner = true;
+  });
+  return winner;
 }

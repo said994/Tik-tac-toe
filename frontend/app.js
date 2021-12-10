@@ -57,7 +57,6 @@ function joinGame() {
 }
 
 let playerNumber;
-let gameActive = false;
 
 function handleInit(number) {
   playerNumber = number;
@@ -70,8 +69,6 @@ function handleGameStart() {
   cells.forEach((cell) => {
     cell.addEventListener("click", clickOnGrid);
   });
-
-  gameActive = true;
 }
 
 function handleRender(playerOne, playerTwo) {
@@ -89,51 +86,42 @@ function clickOnGrid(e) {
 
 function handelEmptyInput() {
   if (!gameCodeInput.value) {
-    stateAnnouncement.classList.remove("hide");
-    createRoomScreen.classList.add("hide");
-    stateText.innerHTML = "Create a Room or join one to play.";
-    setTimeout(() => {
-      stateAnnouncement.classList.add("hide");
-      createRoomScreen.classList.remove("hide");
-    }, MESSAGE_TIME);
+    const message = "Create a Room or join one to play.";
+    sweapHiddenClass(stateAnnouncement, createRoomScreen, message);
     return false;
   }
   return true;
 }
 
 function handleUnkownRoom() {
-  stateAnnouncement.classList.remove("hide");
-  createRoomScreen.classList.add("hide");
-  stateText.innerHTML = "This room does not exist!";
-  setTimeout(() => {
-    stateAnnouncement.classList.add("hide");
-    createRoomScreen.classList.remove("hide");
-  }, MESSAGE_TIME);
+  const message = "This room does not exist!";
+  sweapHiddenClass(stateAnnouncement, createRoomScreen, message);
 }
 
 function handleWaitForPlayer() {
-  stateAnnouncement.classList.remove("hide");
-  gameScreen.classList.add("hide");
-  sectionAnnouncement.classList.add("hide");
-  stateText.innerHTML = "Wait for other player to join!";
-  setTimeout(() => {
-    stateAnnouncement.classList.add("hide");
-    gameScreen.classList.remove("hide");
-    sectionAnnouncement.classList.remove("hide");
-  }, MESSAGE_TIME);
+  const message = "Wait for other player to join!";
+  sweapHiddenClass(stateAnnouncement, gameScreen, message);
 }
 
 function handleFullRoom() {
-  stateAnnouncement.classList.remove("hide");
-  createRoomScreen.classList.add("hide");
-  gameScreen.classList.add("hide");
-  sectionAnnouncement.classList.add("hide");
-  stateText.innerHTML = "The room is full of player!";
+  const message = "The room is full of player!";
+  sweapHiddenClass(stateAnnouncement, createRoomScreen, message);
+}
+
+function handleTurnMessage(number) {
+  if (playerNumber === number) {
+    const message = "Wait for your turn!";
+    sweapHiddenClass(stateAnnouncement, gameScreen, message);
+  }
+}
+
+function sweapHiddenClass(ele1, ele2, message) {
+  ele1.classList.remove("hide");
+  ele2.classList.add("hide");
+  stateText.innerHTML = message;
   setTimeout(() => {
-    stateAnnouncement.classList.add("hide");
-    createRoomScreen.classList.remove("hide");
-    gameScreen.classList.remove("hide");
-    sectionAnnouncement.classList.remove("hide");
+    ele1.classList.add("hide");
+    ele2.classList.remove("hide");
   }, MESSAGE_TIME);
 }
 
@@ -149,29 +137,14 @@ function handleGameState(winner) {
 }
 
 function handleGameDraw(draw) {
-  if (!gameActive) {
-    return;
-  }
   sectionAnnouncement.classList.remove("hide");
   gameScreen.classList.add("hide");
   announcement.innerHTML = draw;
 }
 
-function handleTurnMessage(number) {
-  if (playerNumber === number) {
-    stateAnnouncement.classList.remove("hide");
-    gameScreen.classList.add("hide");
-    stateText.innerHTML = "Wait for your turn!";
-    setTimeout(() => {
-      stateAnnouncement.classList.add("hide");
-      gameScreen.classList.remove("hide");
-    }, MESSAGE_TIME);
-  }
-}
+btnRest.addEventListener("click", restartGame);
 
-btnRest.addEventListener("click", restGame);
-
-function restGame(e) {
+function restartGame(e) {
   e.preventDefault();
   sectionAnnouncement.classList.add("hide");
   clearField();
