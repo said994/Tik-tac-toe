@@ -65,14 +65,15 @@ io.on("connection", (socket) => {
     const roomName = playerRooms[socket.id];
     const roomSize = io.sockets.adapter.rooms.get(roomName).size;
 
-    if (!roomName) {
-      return;
-    }
+    if (!roomName) return;
+
+    if (!state[roomName]) return;
 
     if (roomSize === 1) {
       io.sockets.in(roomName).emit("waitForPlayer");
       return;
     }
+
     const playerOne = state[roomName].players[0];
     const playerTwo = state[roomName].players[1];
     const currentPlayer = state[roomName].players[playerNumber - 1];
