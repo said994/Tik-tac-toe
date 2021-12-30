@@ -118,7 +118,7 @@ function handleTurnMessage(number) {
 function sweapHiddenClass(ele1, ele2, message) {
   ele1.classList.remove("hide");
   ele2.classList.add("hide");
-  stateText.innerHTML = message;
+  stateText.innerText = message;
   setTimeout(() => {
     ele1.classList.add("hide");
     ele2.classList.remove("hide");
@@ -132,14 +132,14 @@ function handleGameState(winner) {
   console.log(winner, playerNumber);
   sectionAnnouncement.classList.remove("hide");
   gameScreen.classList.add("hide");
-  if (winner === playerNumber) announcement.innerHTML = `You win!`;
-  else announcement.innerHTML = `You lose!`;
+  if (winner === playerNumber) announcement.innerText = `You win!`;
+  else announcement.innerText = `You lose!`;
 }
 
 function handleGameDraw(draw) {
   sectionAnnouncement.classList.remove("hide");
   gameScreen.classList.add("hide");
-  announcement.innerHTML = draw;
+  announcement.innerText = draw;
 }
 
 btnRest.addEventListener("click", restartGame);

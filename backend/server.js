@@ -1,10 +1,12 @@
 const http = require("http");
 const express = require("express");
+const helmet = require("helmet");
 const socketio = require("socket.io");
 const { initGame, checkWinner } = require("./game");
 const cors = require("cors");
 
 const app = express();
+app.use(helmet());
 app.use(cors());
 const server = http.createServer(app);
 const io = socketio(server, {
